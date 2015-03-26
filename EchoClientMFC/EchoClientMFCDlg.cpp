@@ -242,6 +242,11 @@ void CEchoClientMFCDlg::OnBnClickedOk()
 
 	std::vector <clock_t> *vt = new std::vector<clock_t>;
 
+	freopen("log.txt", "w+", stdout);
+	std::cout << "Log at " << time(NULL) << std::endl;
+	std::cout << "Message is " << _content << std::endl;
+	std::cout << "Start Time\t" << "Stop Time\t" << "Duration\t" << "Average\t" << "Variance" << std::endl;
+
 	for (int i = 0; i < atoi(_count); i++)
 	{
 		send(hSocket, _content, sizeof(_content), 0);
@@ -270,7 +275,11 @@ void CEchoClientMFCDlg::OnBnClickedOk()
 		edit_average.SetWindowTextW(CString(tmp));
 		_itoa(variance, tmp, 10);
 		edit_variance.SetWindowTextW(CString(tmp));
+
+		std::cout << t1 << "\t" << t2 << "\t" << (t2 - t1) / 2 << "\t" << average << "\t" << variance << std::endl;
 	}
+	closesocket(hSocket);
+	WSACleanup();
 }
 
 

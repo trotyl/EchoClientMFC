@@ -13,6 +13,7 @@
 #include<ctime>
 #include<string>
 #include<vector>
+#include<iostream>
 
 // CEchoClientMFCApp: 
 // 有关此类的实现，请参阅 EchoClientMFC.cpp
