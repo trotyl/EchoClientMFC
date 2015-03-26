@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "afxwin.h"
 
 
 // CEchoClientMFCDlg ¶Ô»°¿ò
@@ -29,4 +30,16 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnBnClickedRadio1();
+	afx_msg void OnBnClickedRadio2();
+	afx_msg void OnEnChangeEdit2();
+	CEdit edit_ip;
+	CEdit edit_port;
+	CEdit edit_content;
+	CEdit edit_count;
+	afx_msg void OnBnClickedOk();
+	afx_msg void OnEnChangeEdit3();
+	afx_msg void OnEnChangeEdit4();
+	afx_msg void OnEnChangeEdit5();
 };

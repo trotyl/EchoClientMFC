@@ -11,6 +11,12 @@
 #define new DEBUG_NEW
 #endif
 
+// 记录参数信息
+int _protocol = 0;
+char* _address;
+char* _port;
+char* _content;
+char* _count;
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
@@ -56,12 +62,24 @@ CEchoClientMFCDlg::CEchoClientMFCDlg(CWnd* pParent /*=NULL*/)
 void CEchoClientMFCDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	//  DDX_Control(pDX, IDC_EDIT2, size_edit);
+	DDX_Control(pDX, IDC_EDIT2, edit_ip);
+	DDX_Control(pDX, IDC_EDIT3, edit_port);
+	DDX_Control(pDX, IDC_EDIT4, edit_content);
+	DDX_Control(pDX, IDC_EDIT5, edit_count);
 }
 
 BEGIN_MESSAGE_MAP(CEchoClientMFCDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDC_RADIO1, &CEchoClientMFCDlg::OnBnClickedRadio1)
+	ON_BN_CLICKED(IDC_RADIO2, &CEchoClientMFCDlg::OnBnClickedRadio2)
+	ON_EN_CHANGE(IDC_EDIT2, &CEchoClientMFCDlg::OnEnChangeEdit2)
+	ON_BN_CLICKED(IDOK, &CEchoClientMFCDlg::OnBnClickedOk)
+	ON_EN_CHANGE(IDC_EDIT3, &CEchoClientMFCDlg::OnEnChangeEdit3)
+	ON_EN_CHANGE(IDC_EDIT4, &CEchoClientMFCDlg::OnEnChangeEdit4)
+	ON_EN_CHANGE(IDC_EDIT5, &CEchoClientMFCDlg::OnEnChangeEdit5)
 END_MESSAGE_MAP()
 
 
@@ -97,6 +115,7 @@ BOOL CEchoClientMFCDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO:  在此添加额外的初始化代码
+
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -150,3 +169,112 @@ HCURSOR CEchoClientMFCDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+
+void CEchoClientMFCDlg::OnBnClickedRadio1()
+{
+	_protocol = SOCK_STREAM;
+}
+
+
+void CEchoClientMFCDlg::OnBnClickedRadio2()
+{
+	_protocol = SOCK_DGRAM;
+}
+
+
+void CEchoClientMFCDlg::OnEnChangeEdit2()
+{
+	// TODO:  如果该控件是 RICHEDIT 控件，它将不
+	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
+	// 函数并调用 CRichEditCtrl().SetEventMask()，
+	// 同时将 ENM_CHANGE 标志“或”运算到掩码中。
+
+	// TODO:  在此添加控件通知处理程序代码
+	CString str;
+	edit_ip.GetWindowTextW(str);
+	_address = (LPSTR)(LPCTSTR)str;
+}
+
+void CEchoClientMFCDlg::OnBnClickedOk()
+{
+	// TODO:  在此添加控件通知处理程序代码
+	//CDialogEx::OnOK();
+
+	WSADATA wsaData;
+	SOCKET hSocket;
+	SOCKADDR_IN servAddr;
+
+	char message[100];
+	int strLen = 0;
+	int idx = 0, readLen = 0;
+
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+	{
+		MessageBox(LPCTSTR("WSAStartup() error!"));
+	}
+	
+	hSocket = socket(AF_INET, _protocol, 0);
+	if (hSocket == INVALID_SOCKET)
+	{
+		MessageBox(LPCTSTR("socket() error!"));
+	}
+
+	memset(&servAddr, 0, sizeof(servAddr));
+	servAddr.sin_family = AF_INET;
+	servAddr.sin_addr.S_un.S_addr = inet_addr(_address);
+	servAddr.sin_port = htons(atoi(_port));
+
+	if (connect(hSocket, (SOCKADDR*)&servAddr, sizeof(servAddr)) == SOCKET_ERROR)
+	{
+		MessageBox(LPCTSTR("connect() error!"));
+	}
+
+	for (size_t i = 0; i < atoi(_count); i++)
+	{
+		send(hSocket, _content, sizeof(_content), 0);
+		clock();
+	}
+}
+
+
+void CEchoClientMFCDlg::OnEnChangeEdit3()
+{
+	// TODO:  如果该控件是 RICHEDIT 控件，它将不
+	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
+	// 函数并调用 CRichEditCtrl().SetEventMask()，
+	// 同时将 ENM_CHANGE 标志“或”运算到掩码中。
+
+	// TODO:  在此添加控件通知处理程序代码
+	CString str;
+	edit_port.GetWindowTextW(str);
+	_port = (LPSTR)(LPCTSTR)str;
+}
+
+
+void CEchoClientMFCDlg::OnEnChangeEdit4()
+{
+	// TODO:  如果该控件是 RICHEDIT 控件，它将不
+	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
+	// 函数并调用 CRichEditCtrl().SetEventMask()，
+	// 同时将 ENM_CHANGE 标志“或”运算到掩码中。
+
+	// TODO:  在此添加控件通知处理程序代码
+	CString str;
+	edit_content.GetWindowTextW(str);
+	_content = (LPSTR)(LPCTSTR)str;
+}
+
+
+void CEchoClientMFCDlg::OnEnChangeEdit5()
+{
+	// TODO:  如果该控件是 RICHEDIT 控件，它将不
+	// 发送此通知，除非重写 CDialogEx::OnInitDialog()
+	// 函数并调用 CRichEditCtrl().SetEventMask()，
+	// 同时将 ENM_CHANGE 标志“或”运算到掩码中。
+
+	// TODO:  在此添加控件通知处理程序代码
+	CString str;
+	edit_count.GetWindowTextW(str);
+	_count = (LPSTR)(LPCTSTR)str;
+}
