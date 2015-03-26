@@ -13,10 +13,10 @@
 
 // 记录参数信息
 int _protocol = 0;
-char* _address;
-char* _port;
-char* _content;
-char* _count;
+char* _address = (char *)(malloc(20 * sizeof(char)));
+char* _port = (char *)(malloc(10 * sizeof(char)));
+char* _content = (char *)(malloc(100 * sizeof(char)));
+char* _count = (char *)(malloc(10 * sizeof(char)));
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
@@ -67,6 +67,9 @@ void CEchoClientMFCDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT3, edit_port);
 	DDX_Control(pDX, IDC_EDIT4, edit_content);
 	DDX_Control(pDX, IDC_EDIT5, edit_count);
+	DDX_Control(pDX, IDC_EDIT1, edit_current);
+	DDX_Control(pDX, IDC_EDIT6, edit_average);
+	DDX_Control(pDX, IDC_EDIT7, edit_variance);
 }
 
 BEGIN_MESSAGE_MAP(CEchoClientMFCDlg, CDialogEx)
@@ -191,9 +194,13 @@ void CEchoClientMFCDlg::OnEnChangeEdit2()
 	// 同时将 ENM_CHANGE 标志“或”运算到掩码中。
 
 	// TODO:  在此添加控件通知处理程序代码
+
 	CString str;
 	edit_ip.GetWindowTextW(str);
-	_address = (LPSTR)(LPCTSTR)str;
+
+	USES_CONVERSION;
+	char *tmp = T2A(str);
+	strcpy(_address, tmp);
 }
 
 void CEchoClientMFCDlg::OnBnClickedOk()
@@ -211,13 +218,15 @@ void CEchoClientMFCDlg::OnBnClickedOk()
 
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
 	{
-		MessageBox(LPCTSTR("WSAStartup() error!"));
+		MessageBox(CString("1.WSAStartup() error!"));
+		return;
 	}
 	
 	hSocket = socket(AF_INET, _protocol, 0);
 	if (hSocket == INVALID_SOCKET)
 	{
-		MessageBox(LPCTSTR("socket() error!"));
+		MessageBox(CString("2.socket() error!"));
+		return;
 	}
 
 	memset(&servAddr, 0, sizeof(servAddr));
@@ -227,13 +236,40 @@ void CEchoClientMFCDlg::OnBnClickedOk()
 
 	if (connect(hSocket, (SOCKADDR*)&servAddr, sizeof(servAddr)) == SOCKET_ERROR)
 	{
-		MessageBox(LPCTSTR("connect() error!"));
+		MessageBox(CString("3.connect() error!"));
+		return;
 	}
 
-	for (size_t i = 0; i < atoi(_count); i++)
+	std::vector <clock_t> *vt = new std::vector<clock_t>;
+
+	for (int i = 0; i < atoi(_count); i++)
 	{
 		send(hSocket, _content, sizeof(_content), 0);
-		clock();
+		auto t1 = clock();
+		recv(hSocket, message, sizeof(message), 0);
+		auto t2 = clock();
+		
+		vt->push_back((t2 - t1) / 2);
+
+		long sum = 0, sum_square = 0;
+		for each (clock_t t in *vt)
+		{
+			sum += t;
+			sum_square += t * t;
+		}
+		long average = 0, average_square = 0;
+		average = sum / vt->size();
+		average_square = sum_square / vt->size();
+		
+		long variance = average_square - average * average;
+
+		char tmp[10];
+		_itoa(i + 1, tmp, 10);
+		edit_current.SetWindowTextW(CString(tmp));
+		_itoa(average, tmp, 10);
+		edit_average.SetWindowTextW(CString(tmp));
+		_itoa(variance, tmp, 10);
+		edit_variance.SetWindowTextW(CString(tmp));
 	}
 }
 
@@ -248,7 +284,9 @@ void CEchoClientMFCDlg::OnEnChangeEdit3()
 	// TODO:  在此添加控件通知处理程序代码
 	CString str;
 	edit_port.GetWindowTextW(str);
-	_port = (LPSTR)(LPCTSTR)str;
+	USES_CONVERSION;
+	char *tmp = T2A(str);
+	strcpy(_port, tmp);
 }
 
 
@@ -262,7 +300,9 @@ void CEchoClientMFCDlg::OnEnChangeEdit4()
 	// TODO:  在此添加控件通知处理程序代码
 	CString str;
 	edit_content.GetWindowTextW(str);
-	_content = (LPSTR)(LPCTSTR)str;
+	USES_CONVERSION;
+	char *tmp = T2A(str);
+	strcpy(_content, tmp);
 }
 
 
@@ -276,5 +316,7 @@ void CEchoClientMFCDlg::OnEnChangeEdit5()
 	// TODO:  在此添加控件通知处理程序代码
 	CString str;
 	edit_count.GetWindowTextW(str);
-	_count = (LPSTR)(LPCTSTR)str;
+	USES_CONVERSION;
+	char *tmp = T2A(str);
+	strcpy(_count, tmp);
 }

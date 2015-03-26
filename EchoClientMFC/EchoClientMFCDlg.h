@@ -42,4 +42,7 @@ public:
 	afx_msg void OnEnChangeEdit3();
 	afx_msg void OnEnChangeEdit4();
 	afx_msg void OnEnChangeEdit5();
+	CEdit edit_current;
+	CEdit edit_average;
+	CEdit edit_variance;
 };
